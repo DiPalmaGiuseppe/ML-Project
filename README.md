@@ -1,2 +1,2 @@
 # Machine Learning Project
-## Giuseppe Di Palma, Daniel Wahle
+### Giuseppe Di Palma, Daniel Thomas Wahle
