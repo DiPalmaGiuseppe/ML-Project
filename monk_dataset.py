@@ -18,8 +18,8 @@ def monk_loader(id):
     X_test = pd.DataFrame(encoder.transform(X_test)).astype(int)
 
     return (
-        X_train,  # One-hot encoded training features as DataFrame
-        y_train,             # Training labels
-        X_test,   # One-hot encoded test features as DataFrame
-        y_test               # Test labels
+        X_train,
+        y_train,
+        X_test,
+        y_test    
     )

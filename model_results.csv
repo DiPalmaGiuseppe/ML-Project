@@ -1,0 +1,7 @@
+Model,Dataset,Best_Params,Test_Accuracy,Train_Loss,Train_Accuracy,Val_Accuracy
+MLP,1,"{'hidden_layer_sizes': [2], 'activation_fn': 'ReLU', 'learning_rate': 0.1, 'momentum': 0.95}",1.0,0.7042251229286194,0.5,1.0
+Logistic Regression,1,{'learning_rate': 0.1},0.7106481481481481,0.5183082222938538,0.8387096524238586,0.7392086386680603
+MLP,2,"{'hidden_layer_sizes': [5], 'activation_fn': 'ReLU', 'learning_rate': 0.1, 'momentum': 0.8}",1.0,0.677011251449585,0.6213017702102661,1.0
+Logistic Regression,2,{'learning_rate': 0.1},0.6712962962962963,0.6593303680419922,0.6213017702102661,0.6572379469871521
+MLP,3,"{'hidden_layer_sizes': [1], 'activation_fn': 'ReLU', 'learning_rate': 0.01, 'momentum': 0.8}",0.9722222222222222,0.6963135004043579,0.49180328845977783,0.9638988971710205
+Logistic Regression,3,{'learning_rate': 0.1},0.9722222222222222,0.4433387815952301,0.9344262480735779,0.9638988971710205

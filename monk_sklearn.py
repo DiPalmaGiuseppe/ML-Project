@@ -46,7 +46,7 @@ def test_random_search(model, param_dist):
 print("---- SVM ----")
 svm = SVC(random_state=42)
 svm_param_dist = {
-    'C': uniform(0.1, 1000),
+    'C': uniform(0.01, 100),
     'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
     'gamma': uniform(0.001, 10000)
 }
@@ -56,10 +56,11 @@ test_random_search(svm, svm_param_dist)
 print("---- MLP Classifier ----")
 mlp = MLPClassifier(random_state=42, max_iter=10000, early_stopping=True)
 mlp_param_dist = {
-    'hidden_layer_sizes': [(1,), (2,), (5,), (10,),(2,2), (5,5), (10,10)],
+    'hidden_layer_sizes': [(1,), (2,), (3,), (4,)],
     'activation': ['tanh', 'relu', 'logistic'],
     'solver': ['adam', 'sgd'],
     'alpha': uniform(0.0001, 0.1),
+    'momentum': uniform(0.7, 0.3),
     'learning_rate': ['constant', 'invscaling', 'adaptive']
 }
 test_random_search(mlp, mlp_param_dist)
