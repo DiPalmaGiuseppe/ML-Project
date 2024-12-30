@@ -10,9 +10,7 @@ from sklearn.metrics import make_scorer
 # Suppress TensorFlow INFO, WARNING, and ERROR logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-TEAM_NAME = "P&R"
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-BLIND_TEST_FILENAME = f"{TEAM_NAME}_ML-CUP24-TS.csv"
 
 
 def read_tr(split=False):
@@ -72,7 +70,6 @@ def save_figure(model_name, **params):
     plt.savefig(fig_path, dpi=600)
 
 
-# Save the predicted results in a csv file.
 def write_blind_results(y_pred):
     """
     Save predicted results in a CSV file for the blind test dataset.
@@ -83,7 +80,7 @@ def write_blind_results(y_pred):
 
     assert len(y_pred) == 500, "Not enough predictions! 500 predictions expected!"
 
-    file_path = os.path.join(ROOT_DIR, BLIND_TEST_FILENAME)
+    file_path = os.path.join(ROOT_DIR, "P&R_ML-CUP24-TS.csv")
     with open(file_path, "w") as f:
         f.write("# Giuseppe Di Palma \t Daniel Wahle\n")
         f.write("# P&R\n")
