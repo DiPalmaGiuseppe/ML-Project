@@ -1,0 +1,19 @@
+---- Final Results ----
+
+Dataset MONK-1:
+Test Accuracy: 1.0000
+Test F1 Score: 1.0000
+Test AUC: 1.0000
+Best Config: {'learning_rate': 0.1, 'momentum': 0.9, 'n_units': 3}
+
+Dataset MONK-2:
+Test Accuracy: 1.0000
+Test F1 Score: 1.0000
+Test AUC: 1.0000
+Best Config: {'learning_rate': 0.2, 'momentum': 0.7, 'n_units': 4}
+
+Dataset MONK-3:
+Test Accuracy: 0.9653
+Test F1 Score: 0.9660
+Test AUC: 0.9671
+Best Config: {'learning_rate': 0.01, 'momentum': 0.7, 'n_units': 2}
