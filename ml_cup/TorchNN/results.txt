@@ -1,0 +1,5 @@
+Best configuration: {'learning_rate': 0.01, 'momentum': 0.9, 'n_hidden_layers': 1, 'n_units': 30}
+Best validation loss: 0.0595753874629736
+---- Final Results (original scale data) ----
+Test Loss: 0.8690804243087769
+Test R²: 0.9914124011993408

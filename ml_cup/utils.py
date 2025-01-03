@@ -74,7 +74,7 @@ def save_figure(model_name, **params):
     file_name = f"{param_str}.png"
 
     # Create directory if it doesn't exist
-    dir_path = os.path.join(ROOT_DIR, model_name, "plot")
+    dir_path = os.path.join(ROOT_DIR, model_name)
     os.makedirs(dir_path, exist_ok=True)
 
     # Save the plot

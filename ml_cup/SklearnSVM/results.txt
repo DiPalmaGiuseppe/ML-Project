@@ -1,0 +1,4 @@
+Best parameters: {'estimator__C': np.float64(48.30392450495045), 'estimator__degree': 4, 'estimator__epsilon': np.float64(0.016527306986304828), 'estimator__gamma': 'auto', 'estimator__kernel': 'rbf'}
+---- Final Results (original scale data) ----
+Test Mean Euclidean Error: 0.7590388010384082
+Test R²: 0.8914908372884245

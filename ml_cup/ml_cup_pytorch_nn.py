@@ -39,7 +39,7 @@ def train_and_evaluate(model, optimizer, train_dataloader, val_dataloader, patie
 
     train_losses, val_losses = [], []
 
-    for epoch in range(200):
+    for epoch in range(500):
         model.train()
         train_loss = 0
         for x_batch, y_batch in train_dataloader:
