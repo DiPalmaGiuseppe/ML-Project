@@ -141,7 +141,7 @@ def main(ms=False):
     print("Keras pipeline started")
 
     # Read training data
-    x, y, x_its, y_its = read_tr(split=True)
+    x, x_its, y, y_its = read_tr(split=0.2)
 
     # Perform model selection or use default parameters
     if ms:
