@@ -8,8 +8,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
-from utils import read_tr, read_ts, write_blind_results, save_figure
-from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler
+from utils import read_tr, read_ts, write_blind_results, save_figure, scale_data
 
 class MLPModel(nn.Module):
     def __init__(self, input_size, hidden_layer_size, num_hidden_layer):
@@ -31,22 +30,6 @@ class MLPModel(nn.Module):
     
 def mean_euclidean_error(y_real, y_pred):
     return torch.mean(F.pairwise_distance(y_real, y_pred, p=2))
-
-def scale_data(X_train, X_test, X_Blind, y_train, y_test):
-    # Initialize the scaler
-    feature_scaler = MinMaxScaler()
-    target_scaler = MinMaxScaler()
-
-    # Fit the scaler on training data and transform both training and test data
-    X_train_scaled = feature_scaler.fit_transform(X_train)
-    X_test_scaled = feature_scaler.transform(X_test)
-    X_Blind_scaled = feature_scaler.transform(X_Blind)
-
-    # Fit the target scaler on training data and transform target variables
-    y_train_scaled = target_scaler.fit_transform(y_train)
-    y_test_scaled = target_scaler.transform(y_test)
-
-    return X_train_scaled, X_test_scaled, X_Blind_scaled, y_train_scaled, y_test_scaled, feature_scaler, target_scaler
 
 def train_and_evaluate(model, optimizer, train_dataloader, val_dataloader, patience=10):
     criterion = mean_euclidean_error
@@ -132,8 +115,8 @@ def grid_search():
     X_Blind = read_ts()
     
     # Scale the data
-    X_train, X_test, X_Blind, y_train, y_test, feature_scaler, target_scaler = scale_data(
-        X_train, X_test, X_Blind, y_train, y_test
+    X_train, X_test, X_Blind, y_train, feature_scaler, target_scaler = scale_data(
+        X_train, X_test, X_Blind, y_train
     )
     
     # Convert to torch tensors
@@ -207,10 +190,11 @@ def grid_search():
     y_blind_pred = target_scaler.inverse_transform(y_blind_pred_scaled)
     write_blind_results("TorchNN", y_blind_pred)
 
-    print("---- Final Results ----")
+    print("---- Final Results (original scale data) ----")
     y_pred = None
     with torch.no_grad():
         y_pred = best_model(X_test)
+    y_pred = torch.tensor(target_scaler.inverse_transform(y_pred), dtype = torch.float32)
     test_loss = mean_euclidean_error(y_test, y_pred)
     print("Test Loss:", test_loss.item())
     ss_total = torch.sum((y_test - torch.mean(y_test)) ** 2)

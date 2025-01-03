@@ -6,6 +6,7 @@ import tensorflow.keras.backend as K
 from numpy import loadtxt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import make_scorer
+from sklearn.preprocessing import MinMaxScaler
 
 # Suppress TensorFlow INFO, WARNING, and ERROR logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -48,6 +49,17 @@ def read_ts():
 
     return test
 
+def scale_data(X_train, X_test, X_Blind, y_train):
+    feature_scaler = MinMaxScaler()
+    target_scaler = MinMaxScaler()
+
+    X_train_scaled = feature_scaler.fit_transform(X_train)
+    X_test_scaled = feature_scaler.transform(X_test)
+    X_Blind_scaled = feature_scaler.transform(X_Blind)
+
+    y_train_scaled = target_scaler.fit_transform(y_train)
+
+    return X_train_scaled, X_test_scaled, X_Blind_scaled, y_train_scaled, feature_scaler, target_scaler
 
 def save_figure(model_name, **params):
     """
