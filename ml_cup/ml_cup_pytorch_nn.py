@@ -9,6 +9,7 @@ import os
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
 from utils import read_tr, read_ts, write_blind_results, save_figure
+from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler
 
 class MLPModel(nn.Module):
     def __init__(self, input_size, hidden_layer_size, num_hidden_layer):
@@ -23,7 +24,6 @@ class MLPModel(nn.Module):
             layers.append(self.activation_function())
         
         layers.append(nn.Linear(hidden_layer_size, 3))
-        layers.append(self.activation_function())
         self.network = nn.Sequential(*layers)
 
     def forward(self, x):
@@ -31,6 +31,22 @@ class MLPModel(nn.Module):
     
 def mean_euclidean_error(y_real, y_pred):
     return torch.mean(F.pairwise_distance(y_real, y_pred, p=2))
+
+def scale_data(X_train, X_test, X_Blind, y_train, y_test):
+    # Initialize the scaler
+    feature_scaler = MinMaxScaler()
+    target_scaler = MinMaxScaler()
+
+    # Fit the scaler on training data and transform both training and test data
+    X_train_scaled = feature_scaler.fit_transform(X_train)
+    X_test_scaled = feature_scaler.transform(X_test)
+    X_Blind_scaled = feature_scaler.transform(X_Blind)
+
+    # Fit the target scaler on training data and transform target variables
+    y_train_scaled = target_scaler.fit_transform(y_train)
+    y_test_scaled = target_scaler.transform(y_test)
+
+    return X_train_scaled, X_test_scaled, X_Blind_scaled, y_train_scaled, y_test_scaled, feature_scaler, target_scaler
 
 def train_and_evaluate(model, optimizer, train_dataloader, val_dataloader, patience=10):
     criterion = mean_euclidean_error
@@ -78,7 +94,7 @@ def train_and_evaluate(model, optimizer, train_dataloader, val_dataloader, patie
         model.load_state_dict(best_model_state)
     return train_losses, val_losses
 
-def train_for_config(config, X_train, y_train, kfold, train_dataset):
+def train_for_config(config, X_train, kfold, train_dataset):
     fold_val_losses = []
 
     for train_idx, val_idx in kfold.split(X_train):
@@ -115,6 +131,12 @@ def grid_search():
     X_train, X_test, y_train, y_test = read_tr(split = 0.2)
     X_Blind = read_ts()
     
+    # Scale the data
+    X_train, X_test, X_Blind, y_train, y_test, feature_scaler, target_scaler = scale_data(
+        X_train, X_test, X_Blind, y_train, y_test
+    )
+    
+    # Convert to torch tensors
     X_train = torch.tensor(X_train, dtype = torch.float32)
     X_test = torch.tensor(X_test, dtype = torch.float32)
     X_Blind = torch.tensor(X_Blind, dtype = torch.float32)
@@ -135,7 +157,7 @@ def grid_search():
     with ProcessPoolExecutor() as executor:
         futures = []
         for config in grid:
-            futures.append(executor.submit(train_for_config, config, X_train, y_train, kfold, train_dataset))
+            futures.append(executor.submit(train_for_config, config, X_train, kfold, train_dataset))
 
         for future in futures:
             res_config, res_avg_loss = future.result()
@@ -166,12 +188,6 @@ def grid_search():
 
     train_losses, val_losses = train_and_evaluate(best_model, optimizer, train_dataloader, val_dataloader, 20)
 
-    best_model.eval()
-    y_blind_pred = None
-    with torch.no_grad():
-        y_blind_pred = best_model(X_Blind)
-    write_blind_results("TorchNN", y_blind_pred)
-
     # Plot del grafico delle perdite
     plt.plot(train_losses, label='Loss TR')
     plt.plot(val_losses, label='Loss CV')
@@ -180,6 +196,16 @@ def grid_search():
     plt.legend()
     plt.title(f"(eta={best_config['learning_rate']}, alpha={best_config['momentum']}) - Loss")
     save_figure("TorchNN", eta = best_config['learning_rate'], alpha = best_config['momentum'], plt_type='loss')
+
+    # Make predictions on Blind Data
+    best_model.eval()
+    y_blind_pred_scaled = None
+    with torch.no_grad():
+        y_blind_pred_scaled = best_model(X_Blind)
+    
+    # Rescale predictions back to original scale
+    y_blind_pred = target_scaler.inverse_transform(y_blind_pred_scaled)
+    write_blind_results("TorchNN", y_blind_pred)
 
     print("---- Final Results ----")
     y_pred = None
