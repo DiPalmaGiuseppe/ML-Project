@@ -13,7 +13,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def read_tr(split=False):
+def read_tr(split=None):
     """
     Read the training set.
     
@@ -24,14 +24,14 @@ def read_tr(split=False):
         - If split is False: (x, y)
         - If split is True: (x_train, y_train, x_test, y_test)
     """
-    file = os.path.join(ROOT_DIR, "ml_cup_dataset", "ML-CUP24-TR.csv")
-    train = loadtxt(file, delimiter=',', usecols=range(1, 16), dtype=np.float64)
+    file = os.path.join(ROOT_DIR, "dataset", "ML-CUP24-TR.csv")
+    train = loadtxt(file, delimiter=',', usecols=range(1, 16), dtype=np.float32)
 
     x = train[:, :-3]
     y = train[:, -3:]
 
     if split:
-        return train_test_split(x, y, test_size=0.15, random_state=42)
+        return train_test_split(x, y, test_size=split, random_state=42)
     else:
         return x, y
 
@@ -43,7 +43,7 @@ def read_ts():
     Returns:
         np.ndarray: The blind test set.
     """
-    file = os.path.join(ROOT_DIR, "ml_cup_dataset", "ML-CUP24-TS.csv")
+    file = os.path.join(ROOT_DIR, "dataset", "ML-CUP24-TS.csv")
     test = loadtxt(file, delimiter=',', usecols=range(1, 13), dtype=np.float64)
 
     return test
@@ -70,7 +70,7 @@ def save_figure(model_name, **params):
     plt.savefig(fig_path, dpi=600)
 
 
-def write_blind_results(y_pred):
+def write_blind_results(model_name, y_pred):
     """
     Save predicted results in a CSV file for the blind test dataset.
     
@@ -80,7 +80,7 @@ def write_blind_results(y_pred):
 
     assert len(y_pred) == 500, "Not enough predictions! 500 predictions expected!"
 
-    file_path = os.path.join(ROOT_DIR, "P&R_ML-CUP24-TS.csv")
+    file_path = os.path.join(ROOT_DIR, model_name,"P&R_ML-CUP24-TS.csv")
     with open(file_path, "w") as f:
         f.write("# Giuseppe Di Palma \t Daniel Wahle\n")
         f.write("# P&R\n")
