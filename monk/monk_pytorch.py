@@ -39,7 +39,8 @@ class MLPModel(nn.Module):
 
 # Funzione per salvare i grafici
 def save_monk_fig(monk_number, eta, alpha, plt_type='loss'):
-    name = f"monk{monk_number}_{plt_type}_eta{eta}_alpha{alpha}.png"
+    name = "monk"+monk_number+f"_{plt_type}_eta{eta}_alpha{alpha}.png"
+    print(name)
     fig_path = os.path.join(DIR_PATH, name)
     plt.savefig(fig_path, dpi=600)
     plt.clf()
@@ -99,99 +100,137 @@ def train_and_evaluate(model, optimizer, train_dataloader, val_dataloader, patie
     return train_losses, val_losses, train_accuracies, val_accuracies
 
 # 4. Funzione per eseguire la grid search
-def grid_search():
+def grid_search(idx, reg = False):
     print("---- Grid Search ----")
     param_grid = {
         'n_units': [2, 3, 4],
-        'momentum': [0.7, 0.75, 0.8, 0.85, 0.9],
-        'learning_rate': [0.01, 0.1, 0.2]
+        'momentum': [0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95],
+        'learning_rate': [0.001, 0.01, 0.1, 0.2, 0.5],
+        'batch_size': [16, 32]
     }
+    
+    if reg:
+        param_grid["lmb"] = [0.0005, 0.001]
+        
+    print(f"Dataset: MONK-{idx}")
+    X_train, y_train, X_test, y_test = prepare_data(idx)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    train_dataset = TensorDataset(X_train, y_train)
+    val_dataset = TensorDataset(X_val, y_val)
 
+    best_config = None
+    best_val_acc = 0
+    best_model = None
+    best_train_losses = None
+    best_val_losses = None
+    best_train_accuracies = None    
+    best_val_accuracies = None
+
+    grid = ParameterGrid(param_grid)
+
+    for config in grid:
+        print(f"Testing config: {config}")
+        train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True)
+        val_dataloader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False)
+
+        if reg:
+            lmb = config['lmb']
+        else:
+            lmb = 0
+
+        model = MLPModel(input_size=X_train.shape[1], hidden_layer_size=config['n_units'])
+        optimizer = optim.SGD(model.parameters(), lr=config['learning_rate'], momentum=config['momentum'], weight_decay=lmb)
+
+        train_losses, val_losses, train_accuracies, val_accuracies = train_and_evaluate(
+            model, optimizer, train_dataloader, val_dataloader
+        )
+
+        if max(val_accuracies) > best_val_acc:
+            best_val_acc = max(val_accuracies)
+            best_config = config
+            best_model = model
+            best_train_losses = train_losses
+            best_val_losses = val_losses
+            best_train_accuracies = train_accuracies
+            best_val_accuracies = val_accuracies
+
+    str_idx = str(idx)+" (reg)" if reg else str(idx)
+
+    # Salva i grafici
+    plt.plot(best_train_losses, label='Loss TR')
+    plt.plot(best_val_losses, label='Loss VL')
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.title(f"""MONK-{str_idx} 
+              (eta={best_config['learning_rate']},
+              alpha={best_config['momentum']},
+              batch_size={best_config['batch_size']},
+              n_units={best_config['n_units']})""" +
+              f"lmb= {best_config['lmb']}- Loss" if reg else"- Loss")
+    save_monk_fig(str_idx, best_config['learning_rate'], best_config['momentum'], plt_type='loss')
+
+    plt.plot(best_train_accuracies, label='Accuracy TR')
+    plt.plot(best_val_accuracies, label='Accuracy VL')
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.title(f"""MONK-{str_idx} 
+              (eta={best_config['learning_rate']},
+              alpha={best_config['momentum']},
+              batch_size={best_config['batch_size']},
+              n_units={best_config['n_units']})""" +
+              f"lmb= {best_config['lmb']}- Accuracy" if reg else"- Accuracy")
+    save_monk_fig(str_idx, best_config['learning_rate'], best_config['momentum'], plt_type='acc')
+
+    # Valutazione sui dati di test
+    best_model.eval()
+    y_pred = best_model(X_test).detach().cpu().numpy().round()
+    accuracy = accuracy_score(y_test.cpu().numpy(), y_pred)
+    f1 = f1_score(y_test.cpu().numpy(), y_pred)
+    auc = roc_auc_score(y_test.cpu().numpy(), y_pred)
+    
     results = []
 
-    for dataset_idx in range(1, 4):  # Itera su MONK-1, MONK-2, MONK-3
-        print(f"Dataset: MONK-{dataset_idx}")
-        X_train, y_train, X_test, y_test = prepare_data(dataset_idx)
-        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
-        train_dataset = TensorDataset(X_train, y_train)
-        val_dataset = TensorDataset(X_val, y_val)
-        train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-        val_dataloader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+    results.append({
+        "Dataset": str_idx,
+        "Test_Accuracy": accuracy,
+        "Test_F1": f1,
+        "Test_AUC": auc,
+        "Training Loss": min(best_train_losses),
+        "Validation Loss": min(best_val_losses),
+        "Training Accuracy": max(best_train_accuracies),
+        "Validation Accuracy": max(best_val_accuracies),
+        "Best_Config": best_config,
+    })
+    
+    return results
 
-        best_config = None
-        best_val_acc = 0
-        best_model = None
-        best_train_losses = None
-        best_val_losses = None
-        best_train_accuracies = None    
-        best_val_accuracies = None
-
-        grid = ParameterGrid(param_grid)
-
-        for config in grid:
-            print(f"Testing config: {config}")
-
-            model = MLPModel(input_size=X_train.shape[1], hidden_layer_size=config['n_units'])
-            optimizer = optim.SGD(model.parameters(), lr=config['learning_rate'], momentum=config['momentum'])
-
-            train_losses, val_losses, train_accuracies, val_accuracies = train_and_evaluate(
-                model, optimizer, train_dataloader, val_dataloader
-            )
-
-            if max(val_accuracies) > best_val_acc:
-                best_val_acc = max(val_accuracies)
-                best_config = config
-                best_model = model
-                best_train_losses = train_losses
-                best_val_losses = val_losses
-                best_train_accuracies = train_accuracies
-                best_val_accuracies = val_accuracies
-
-        # Salva i grafici
-        plt.plot(best_train_losses, label='Loss TR')
-        plt.plot(best_val_losses, label='Loss VL')
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.legend()
-        plt.title(f"MONK-{dataset_idx} (eta={best_config['learning_rate']}, alpha={best_config['momentum']}) - Loss")
-        save_monk_fig(dataset_idx, best_config['learning_rate'], best_config['momentum'], plt_type='loss')
-
-        plt.plot(best_train_accuracies, label='Accuracy TR')
-        plt.plot(best_val_accuracies, label='Accuracy VL')
-        plt.xlabel("Epoch")
-        plt.ylabel("Accuracy")
-        plt.legend()
-        plt.title(f"MONK-{dataset_idx} (eta={best_config['learning_rate']}, alpha={best_config['momentum']}) - Accuracy")
-        save_monk_fig(dataset_idx, best_config['learning_rate'], best_config['momentum'], plt_type='acc')
-
-        # Valutazione sui dati di test
-        best_model.eval()
-        y_pred = best_model(X_test).detach().cpu().numpy().round()
-        accuracy = accuracy_score(y_test.cpu().numpy(), y_pred)
-        f1 = f1_score(y_test.cpu().numpy(), y_pred)
-        auc = roc_auc_score(y_test.cpu().numpy(), y_pred)
-
-        results.append({
-            "Dataset": dataset_idx,
-            "Test_Accuracy": accuracy,
-            "Test_F1": f1,
-            "Test_AUC": auc,
-            "Best_Config": best_config,
-        })
-
-    # Salva i risultati in un file
-    with open(DIR_PATH+"/results.txt", "w") as f:
+if __name__ == "__main__":
+    results = []
+    for i in range(1, 4):
+        result = grid_search(i)
+        results.append(result)
+    
+    result =  grid_search(3, True)
+    results.append(result)
+    
+    with open(DIR_PATH + "/results.txt", "w") as f:
         f.write("---- Final Results ----\n")
-        for result in results:
-            f.write(f"\nDataset MONK-{result['Dataset']}:\n")
-            f.write(f"Test Accuracy: {result['Test_Accuracy']:.4f}\n")
-            f.write(f"Test F1 Score: {result['Test_F1']:.4f}\n")
-            f.write(f"Test AUC: {result['Test_AUC']:.4f}\n")
-            f.write(f"Best Config: {result['Best_Config']}\n")
+        for dataset_results in results:
+            for result in dataset_results:  # Itera sui dizionari nella lista
+                f.write(f"\nDataset MONK-{result['Dataset']}:\n")
+                f.write(f"Test Accuracy: {result['Test_Accuracy']:.4f}\n")
+                f.write(f"Test F1 Score: {result['Test_F1']:.4f}\n")
+                f.write(f"Test AUC: {result['Test_AUC']:.4f}\n")
+                f.write(f"Training Loss: {result['Training Loss']:.4f}\n")
+                f.write(f"Validation Loss: {result['Validation Loss']:.4f}\n")
+                f.write(f"Training Accuracy: {result['Training Accuracy']:.4f}\n")
+                f.write(f"Validation Accuracy: {result['Validation Accuracy']:.4f}\n")
+                f.write(f"Best Config: {result['Best_Config']}\n")
 
+    
     print("\n---- Final Results ----")
     for result in results:
         print(result)
-
-if __name__ == "__main__":
-    grid_search()
+    

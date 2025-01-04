@@ -31,9 +31,9 @@ def prepare_data(dataset_idx):
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 # 2. Funzione per creare il modello MLP
-def build_model(n_units, learning_rate, momentum):
+def build_model(n_units, learning_rate, momentum, lmb):
     model = models.Sequential([
-        layers.Dense(n_units, activation='tanh', input_dim=17),
+        layers.Dense(n_units, activation='tanh', input_dim=17, kernel_regularizer = lmb),
         layers.Dense(1, activation='sigmoid')
     ])
 
@@ -43,7 +43,7 @@ def build_model(n_units, learning_rate, momentum):
 
 def save_monk_fig(monk_number, eta, alpha, plt_type='loss'):
 
-    name = f"monk{monk_number}_{plt_type}_eta{eta}_alpha{alpha}.png"
+    name = "monk"+monk_number+f"_{plt_type}_eta{eta}_alpha{alpha}.png"
 
     # create plot directory if it doesn't exist
     os.makedirs(DIR_PATH, exist_ok=True)
@@ -54,16 +54,19 @@ def save_monk_fig(monk_number, eta, alpha, plt_type='loss'):
     plt.clf()
 
 # 3. Funzione per effettuare la GridSearch
-def grid_search(dataset_idx):
-    print(f"---- Dataset {dataset_idx} ----")
-    X_train, y_train, X_val, y_val, X_test, y_test = prepare_data(dataset_idx)
+def grid_search(idx, reg = False):
+    print(f"---- Dataset {idx} ----")
+    X_train, y_train, X_val, y_val, X_test, y_test = prepare_data(idx)
     
     param_grid = {
         'n_units': [2, 3, 4],
-        'momentum': [0.7, 0.75, 0.8, 0.85, 0.9],
-        'learning_rate': [0.01, 0.1, 0.2]
+        'momentum': [0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95],
+        'learning_rate': [0.001, 0.01, 0.1, 0.2, 0.5],
+        'batch_size': [16, 32]
     }
 
+    if reg:
+        param_grid["lmb"] = [0.0005, 0.001]
     grid = ParameterGrid(param_grid)
     best_res = None
     best_params = None
@@ -71,24 +74,30 @@ def grid_search(dataset_idx):
     best_model = None
 
     for params in grid:
+        if reg:
+            lmb = l2(params['lmb'])
+        else:
+            lmb = None
         model = build_model(
             n_units=params['n_units'],
             learning_rate=params['learning_rate'],
             momentum=params['momentum'],
+            lmb = lmb
         )
 
         early_stopping = EarlyStopping(
             monitor='val_loss', 
             patience=10, 
-            restore_best_weights=True
+            restore_best_weights=True,
+            min_delta=0.001
         )
 
         res = model.fit(
             X_train,
             y_train,
             epochs=200,
-            batch_size=32,
-            verbose=1,
+            batch_size=params['batch_size'],
+            verbose=0,
             validation_data=(X_val, y_val), 
             callbacks=[early_stopping]
         )
@@ -102,13 +111,21 @@ def grid_search(dataset_idx):
             best_model = model
             best_res = res
             
+            
+    str_idx = str(idx)+" (reg)" if reg else str(idx)
+    
     plt.plot(best_res.history['loss'])
     plt.plot(best_res.history['val_loss'])
     plt.xlabel("Epoch")
     plt.ylabel("MSE")
     plt.legend(['Loss TR', 'Loss VL'], loc='center right')
-    plt.title(f'MONK {dataset_idx} (eta = {best_params["learning_rate"]}, alpha = {best_params["momentum"]}) - Loss')
-    save_monk_fig(dataset_idx, best_params["learning_rate"], best_params["momentum"])
+    plt.title(f"""MONK-{str_idx} 
+              (eta={best_params['learning_rate']},
+              alpha={best_params['momentum']},
+              batch_size={best_params['batch_size']},
+              n_units={best_params['n_units']})""" +
+              (f"lmb= {best_params['lmb']}- Loss" if reg else"- Loss"))
+    save_monk_fig(str_idx, best_params["learning_rate"], best_params["momentum"])
 
     # plot results for "test" (validation) set
     plt.plot(best_res.history['accuracy'])
@@ -116,8 +133,13 @@ def grid_search(dataset_idx):
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.legend(['Accuracy TR', 'Accuracy TS'], loc='center right')
-    plt.title(f'MONK {dataset_idx} (eta = {best_params["learning_rate"]}, alpha = {best_params["momentum"]}) - Accuracy')
-    save_monk_fig(dataset_idx, best_params["learning_rate"], best_params["momentum"], plt_type = 'acc')
+    plt.title(f"""MONK-{str_idx} 
+              (eta={best_params['learning_rate']},
+              alpha={best_params['momentum']},
+              batch_size={best_params['batch_size']},
+              n_units={best_params['n_units']})""" +
+              (f"lmb= {best_params['lmb']}- Accuracy" if reg else"- Accuracy"))
+    save_monk_fig(str_idx, best_params["learning_rate"], best_params["momentum"], plt_type = 'acc')
 
     # Valutazione sui dati di test con il modello migliore
     y_pred = (best_model.predict(X_test) > 0.5).astype("int32")
@@ -126,11 +148,15 @@ def grid_search(dataset_idx):
     auc = roc_auc_score(y_test, y_pred)
 
     return {
-        "Dataset": dataset_idx,
+        "Dataset": str_idx,
         "Best_Params": best_params,
         "Test_Accuracy": accuracy,
         "Test_F1": f1,
         "Test_AUC": auc,
+        "Training Loss": min(best_res.history['loss']),
+        "Validation Loss": min(best_res.history['val_loss']),
+        "Training Accuracy": max(best_res.history['accuracy']),
+        "Validation Accuracy": max(best_res.history['val_accuracy']),
         "Val_Accuracy": best_score
     }
 
@@ -139,5 +165,8 @@ if __name__ == "__main__":
     for i in range(1, 4):
         result = grid_search(i)
         results.append(result)
+    
+    result = grid_search(3, True)
+    results.append(result)
    
     print(tabulate(results, headers="keys", tablefmt="pretty"))
