@@ -12,7 +12,7 @@ from sklearn.metrics import r2_score
 from utils import *
 
 
-def create_model(layers, n_units, learning_rate, momentum, activation = 'tanh',init_mode='glorot_normal'):
+def create_model(layers, n_units, learning_rate, momentum, activation = 'tanh', init_mode='glorot_normal'):
     """
     Create a Keras Sequential model with the specified hyperparameters.
     """
@@ -56,8 +56,7 @@ def evaluate_params(params, x, y, n_splits, seed, epochs):
         early_stopping = EarlyStopping(
             monitor='val_loss',
             patience=10,
-            restore_best_weights=True,
-            min_delta = 0.01
+            restore_best_weights=True
         )
 
         # Train the model
@@ -76,7 +75,7 @@ def evaluate_params(params, x, y, n_splits, seed, epochs):
     print(f"Parameters {params} - avg val loss {avg_val_loss}")    
     return params, avg_val_loss
 
-def find_best_params(x, y, epochs=200, n_splits=10):
+def find_best_params(x, y, epochs=500, n_splits=10):
     """
     Perform grid search for hyperparameter optimization with parallelization.
     """
@@ -119,6 +118,8 @@ def find_best_params(x, y, epochs=200, n_splits=10):
 
     best_params['epochs'] = epochs
 
+    print("Best validation loss:", best_score)
+
     return best_params
 
 def main(ms=False):
@@ -140,14 +141,13 @@ def main(ms=False):
     if ms:
         params = find_best_params(X_train, y_train)
     else:
-        params = dict(learning_rate=0.002, momentum=0.7, lmb=0.0001, epochs=200, batch_size=32)
+        params = dict(learning_rate=0.002, momentum=0.7, lmb=0.0001, epochs=500, batch_size=32)
 
     # Build and train the model
     early_stopping = EarlyStopping(
             monitor='val_loss',
             patience=10,
-            restore_best_weights=True,
-            min_delta = 0.001
+            restore_best_weights=True
         )
     model = create_model(params['n_hidden_layers'], params['n_units'], params['learning_rate'], params['momentum'])
     res = model.fit(X_train, y_train, validation_split=0.2, epochs=params['epochs'], batch_size=32, verbose=1,callbacks=[early_stopping])

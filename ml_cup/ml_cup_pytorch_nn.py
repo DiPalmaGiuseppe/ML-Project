@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import Pool, cpu_count
 from utils import read_tr, read_ts, write_blind_results, save_figure, scale_data
 
 class MLPModel(nn.Module):
@@ -99,6 +99,7 @@ def train_for_config(config, X_train, kfold, train_dataset):
         fold_val_losses.append(min(val_losses))
 
     avg_val_loss = np.mean(fold_val_losses)
+    print(config, avg_val_loss)
     return config, avg_val_loss
 
 # Funzione per eseguire la grid search con cross validation
@@ -137,15 +138,14 @@ def grid_search():
     # Risultati della grid search
     grid_search_results = {}
 
-    with ProcessPoolExecutor() as executor:
-        futures = []
-        for config in grid:
-            futures.append(executor.submit(train_for_config, config, X_train, kfold, train_dataset))
-
-        for future in futures:
-            res_config, res_avg_loss = future.result()
+    with Pool(2) as pool:
+        results = pool.starmap(
+            train_for_config, 
+            [(params, X_train, kfold, train_dataset) for params in grid]
+        )
+        
+        for res_config, res_avg_loss in results:
             grid_search_results[tuple(res_config.items())] = res_avg_loss
-            print(res_config, res_avg_loss)
 
     best_config = min(grid_search_results, key=grid_search_results.get)
     best_val_loss = grid_search_results[best_config]

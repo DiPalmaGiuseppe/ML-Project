@@ -1,0 +1,5 @@
+Best config {'learning_rate': 0.01, 'momentum': 0.9, 'n_hidden_layers': 2, 'n_units': 15, 'epochs': 500}
+Best validation loss: 0.07421060763299465
+---- Final Results (original data scale) ----
+TS Loss: 1.0239556
+Test R²: 0.8482831120491028
