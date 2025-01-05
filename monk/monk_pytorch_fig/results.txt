@@ -1,41 +1,41 @@
 ---- Final Results ----
 
 Dataset MONK-1:
-Test Accuracy: 1.0000
-Test F1 Score: 1.0000
-Test AUC: 1.0000
-Training Loss: 0.0198
-Validation Loss: 0.0293
+Test Accuracy: 0.9884
+Test F1 Score: 0.9883
+Test AUC: 0.9884
+Training Loss: 0.0673
+Validation Loss: 0.1201
 Training Accuracy: 1.0000
 Validation Accuracy: 1.0000
-Best Config: {'batch_size': 16, 'learning_rate': 0.01, 'momentum': 0.95, 'n_units': 4}
+Best Config: {'batch_size': 16, 'learning_rate': 0.01, 'momentum': 0.9, 'n_units': 3}
 
 Dataset MONK-2:
 Test Accuracy: 1.0000
 Test F1 Score: 1.0000
 Test AUC: 1.0000
-Training Loss: 0.0065
-Validation Loss: 0.0081
+Training Loss: 0.0060
+Validation Loss: 0.0079
 Training Accuracy: 1.0000
 Validation Accuracy: 1.0000
-Best Config: {'batch_size': 16, 'learning_rate': 0.1, 'momentum': 0.65, 'n_units': 4}
+Best Config: {'batch_size': 16, 'learning_rate': 0.1, 'momentum': 0.7, 'n_units': 4}
 
 Dataset MONK-3:
 Test Accuracy: 0.9676
 Test F1 Score: 0.9683
 Test AUC: 0.9693
-Training Loss: 0.1647
-Validation Loss: 0.2669
-Training Accuracy: 0.9588
+Training Loss: 0.1713
+Validation Loss: 0.2682
+Training Accuracy: 0.9691
 Validation Accuracy: 0.9600
 Best Config: {'batch_size': 16, 'learning_rate': 0.01, 'momentum': 0.75, 'n_units': 2}
 
 Dataset MONK-3 (reg):
-Test Accuracy: 0.9236
-Test F1 Score: 0.9268
-Test AUC: 0.9240
-Training Loss: 0.0534
-Validation Loss: 0.0250
-Training Accuracy: 0.9897
-Validation Accuracy: 1.0000
-Best Config: {'batch_size': 16, 'learning_rate': 0.2, 'lmb': 0, 'momentum': 0.95, 'n_units': 2}
+Test Accuracy: 0.9491
+Test F1 Score: 0.9502
+Test AUC: 0.9507
+Training Loss: 0.5211
+Validation Loss: 0.5234
+Training Accuracy: 0.9175
+Validation Accuracy: 0.9600
+Best Config: {'batch_size': 16, 'learning_rate': 0.001, 'lmb': 0.0005, 'momentum': 0.75, 'n_units': 3}

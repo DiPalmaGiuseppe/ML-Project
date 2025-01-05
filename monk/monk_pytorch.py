@@ -110,7 +110,7 @@ def grid_search(idx, reg = False):
     }
     
     if reg:
-        param_grid["lmb"] = [0.0005, 0.001]
+        param_grid["lmb"] = [0.00001, 0.0005, 0.001]
         
     print(f"Dataset: MONK-{idx}")
     X_train, y_train, X_test, y_test = prepare_data(idx)
@@ -167,7 +167,7 @@ def grid_search(idx, reg = False):
               alpha={best_config['momentum']},
               batch_size={best_config['batch_size']},
               n_units={best_config['n_units']})""" +
-              f"lmb= {best_config['lmb']}- Loss" if reg else"- Loss")
+              (f"lmb= {best_config['lmb']}- Loss" if reg else"- Loss"))
     save_monk_fig(str_idx, best_config['learning_rate'], best_config['momentum'], plt_type='loss')
 
     plt.plot(best_train_accuracies, label='Accuracy TR')
@@ -180,7 +180,7 @@ def grid_search(idx, reg = False):
               alpha={best_config['momentum']},
               batch_size={best_config['batch_size']},
               n_units={best_config['n_units']})""" +
-              f"lmb= {best_config['lmb']}- Accuracy" if reg else"- Accuracy")
+              (f"lmb= {best_config['lmb']}- Accuracy" if reg else"- Accuracy"))
     save_monk_fig(str_idx, best_config['learning_rate'], best_config['momentum'], plt_type='acc')
 
     # Valutazione sui dati di test
