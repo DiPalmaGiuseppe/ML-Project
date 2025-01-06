@@ -1,0 +1,5 @@
+Abstract
+
+In this project, we systematically compare the performance of machine learning models, specifically Neural Networks (NNs) and Support Vector Machines (SVMs), across different tasks.
+
+For the ML cup regression task, we performed extensive hyperparameter optimization using grid search combined with cross-validation. We explored various configurations, including layer depths, activation functions, and learning rates. Our results show that the SVM model outperforms the neural networks for the ML cup regression task, achieving the lowest validation loss value. 
