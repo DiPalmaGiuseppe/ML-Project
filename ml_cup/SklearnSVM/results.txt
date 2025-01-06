@@ -1,7 +1,6 @@
-Best parameters: {'estimator__C': 66.82938874190161, 'estimator__degree': 5, 'estimator__epsilon': 0.01588824483802689, 'estimator__gamma': 'auto', 'estimator__kernel': 'rbf'}
-Train Loss: 0.03978818599291735
-Val Loss: 0.05637184590054402
+Best parameters: {'estimator__C': 0.1, 'estimator__degree': 3, 'estimator__epsilon': 0.01, 'estimator__gamma': 'scale', 'estimator__kernel': 'poly'}
+Train Loss: 0.0432505431538681
+Val Loss: 0.05210347330414591
 ---- Final Results (original scale data) ----
-Test Loss: 0.7749155696318029
-Test R²: 0.8936092237499368
-Grid Search completed in 29.1662 seconds.
+Test Loss: 0.7331114681692509
+Test R²: 0.9011760811517352
