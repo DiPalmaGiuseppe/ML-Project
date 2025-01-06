@@ -33,8 +33,18 @@ randomized_search.fit(X_train, y_train)
 # Migliori parametri
 print("Best parameters:", randomized_search.best_params_)
 
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 best_model = randomized_search.best_estimator_
 best_model.fit(X_train, y_train)
+
+y_train_pred = best_model.predict(X_train)
+train_loss = euclidean_distance_score(y_train, y_train_pred)
+print("Train Loss:", train_loss)
+
+y_val_pred = best_model.predict(X_val)
+val_loss = euclidean_distance_score(y_val, y_val_pred)
+print("Val Loss:", val_loss)
+
 
 y_pred = best_model.predict(X_test)
 y_pred = target_scaler.inverse_transform(y_pred)
@@ -43,7 +53,7 @@ test_loss = euclidean_distance_score(y_test, y_pred)
 r2 = r2_score(y_test, y_pred)
 
 print("---- Final Results (original scale data) ----")
-print("Test Mean Euclidean Error:", test_loss)
+print("Test Loss:", test_loss)
 print("Test R²:", r2)
 
 y_blind_pred = best_model.predict(X_blind)

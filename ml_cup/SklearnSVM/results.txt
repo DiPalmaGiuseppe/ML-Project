@@ -1,4 +1,6 @@
-Best parameters: {'estimator__C': np.float64(48.30392450495045), 'estimator__degree': 4, 'estimator__epsilon': np.float64(0.016527306986304828), 'estimator__gamma': 'auto', 'estimator__kernel': 'rbf'}
+Best parameters: {'estimator__C': 66.82938874190161, 'estimator__degree': 5, 'estimator__epsilon': 0.01588824483802689, 'estimator__gamma': 'auto', 'estimator__kernel': 'rbf'}
+Train Loss: 0.03978818599291735
+Val Loss: 0.05637184590054402
 ---- Final Results (original scale data) ----
-Test Mean Euclidean Error: 0.7590388010384082
-Test R²: 0.8914908372884245
+Test Loss: 0.7749155696318029
+Test R²: 0.8936092237499368

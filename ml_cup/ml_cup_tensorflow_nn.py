@@ -182,8 +182,8 @@ def main(ms=False):
     print(f"Best config {params}")
     print("TS Loss:", ts_loss)
     print("Test R²:", r2)
-    # print("TR Loss:", min(tr_losses))
-    # print("VL Loss:", min(val_losses))
+    print("TR Loss:", min(tr_losses))
+    print("VL Loss:", min(val_losses))
     
     y_pred = model.predict(X_blind)
     
