@@ -138,7 +138,7 @@ def grid_search():
     # Risultati della grid search
     grid_search_results = {}
 
-    with Pool(2) as pool:
+    with Pool(cpu_count()) as pool:
         results = pool.starmap(
             train_for_config, 
             [(params, X_train, kfold, train_dataset) for params in grid]
@@ -151,9 +151,6 @@ def grid_search():
     best_val_loss = grid_search_results[best_config]
 
     best_config = dict(best_config) 
-    print("Best configuration:", best_config)
-    print("Best validation loss:", best_val_loss)
-
     # Creazione del modello finale con la miglior configurazione
     best_model = MLPModel(
             input_size=X_train.shape[1],
@@ -190,7 +187,14 @@ def grid_search():
     y_blind_pred = target_scaler.inverse_transform(y_blind_pred_scaled)
     write_blind_results("TorchNN", y_blind_pred)
 
-    print("---- Final Results (original scale data) ----")
+
+    print("Best configuration:", best_config)
+
+    print("---- Training Results (scaled) ----")
+    print("Training Loss:", min(train_losses))
+    print("Validation Loss:", min(val_losses))
+
+    print("---- Test Results (original scale data) ----")
     y_pred = None
     with torch.no_grad():
         y_pred = best_model(X_test)

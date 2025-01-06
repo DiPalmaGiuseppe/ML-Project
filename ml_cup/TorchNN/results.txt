@@ -1,0 +1,7 @@
+Best configuration: {'learning_rate': 0.01, 'momentum': 0.9, 'n_hidden_layers': 1, 'n_units': 30}
+---- Training Results (scaled) ----
+Training Loss: 0.049568524956703185
+Validation Loss: 0.054649144411087036
+---- Test Results (original scale data) ----
+Test Loss: 0.8057387471199036
+Test R²: 0.9926474094390869
