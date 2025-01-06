@@ -1,11 +1,12 @@
 import numpy as np
-from sklearn.model_selection import train_test_split, RandomizedSearchCV, KFold
+from sklearn.model_selection import train_test_split, GridSearchCV, KFold
 from sklearn.svm import SVR
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.metrics import r2_score
 from scipy.stats import uniform, loguniform
 import matplotlib.pyplot as plt
 from utils import scorer, read_tr, read_ts, euclidean_distance_score, scale_data, save_figure, write_blind_results
+import time
 
 X_train, X_test, y_train, y_test = read_tr(split = 0.2)
 X_blind = read_ts()
@@ -19,16 +20,18 @@ multi_output_svr = MultiOutputRegressor(svr)
 
 param_dist = {
     'estimator__kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-    'estimator__C': loguniform(1e-3, 1e3),
+    'estimator__C': [1e-3, 1e-2, 1e-1, 1, 10,100],
     'estimator__gamma': ['scale', 'auto'],
     'estimator__degree': [2, 3, 4, 5],
-    'estimator__epsilon': uniform(0.01, 0.1)
+    'estimator__epsilon': [0.01, 0.05, 0.1]
 }
 
-
+start_time = time.time()
 kf = KFold(n_splits=10, shuffle=True, random_state=42)
-randomized_search = RandomizedSearchCV(multi_output_svr, param_distributions=param_dist, n_iter=500, scoring=scorer, cv=kf, verbose=1, n_jobs=-1)
+randomized_search = GridSearchCV(multi_output_svr, param_grid = param_dist, scoring=scorer, cv=kf, verbose=1, n_jobs=-1)
 randomized_search.fit(X_train, y_train)
+print("\nGrid Search completed in {:.4f} seconds.\n".format(time.time() - start_time))
+
 
 # Migliori parametri
 print("Best parameters:", randomized_search.best_params_)
