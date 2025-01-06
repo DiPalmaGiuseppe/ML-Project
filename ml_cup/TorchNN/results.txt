@@ -5,3 +5,5 @@ Validation Loss: 0.054649144411087036
 ---- Test Results (original scale data) ----
 Test Loss: 0.8057387471199036
 Test R²: 0.9926474094390869
+
+Grid Search completed in 895.0047 seconds.

@@ -4,3 +4,4 @@ Val Loss: 0.05637184590054402
 ---- Final Results (original scale data) ----
 Test Loss: 0.7749155696318029
 Test R²: 0.8936092237499368
+Grid Search completed in 29.1662 seconds.

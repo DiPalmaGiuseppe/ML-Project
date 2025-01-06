@@ -1,5 +1,7 @@
-Best config {'learning_rate': 0.01, 'momentum': 0.9, 'n_hidden_layers': 2, 'n_units': 15, 'epochs': 500}
-Best validation loss: 0.07421060763299465
----- Final Results (original data scale) ----
-TS Loss: 1.0239556
-Test R²: 0.8482831120491028
+Best config {'learning_rate': 0.05, 'momentum': 0.8, 'n_hidden_layers': 2, 'n_units': 20, 'epochs': 500}
+TS Loss: 1.3325179
+Test R²: 0.6057687401771545
+TR Loss: 0.1331578940153122
+VL Loss: 0.12550780177116394
+
+Grid Search completed in 1615.2721 seconds.

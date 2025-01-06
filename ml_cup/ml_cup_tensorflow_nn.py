@@ -150,7 +150,8 @@ def main(ms=False):
             restore_best_weights=True
         )
     model = create_model(params['n_hidden_layers'], params['n_units'], params['learning_rate'], params['momentum'])
-    res = model.fit(X_train, y_train, validation_split=0.2, epochs=params['epochs'], batch_size=32, verbose=1,callbacks=[early_stopping])
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    res = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=params['epochs'], batch_size=32, verbose=1, callbacks=[early_stopping])
 
     # Training and validation losses
     tr_losses = res.history['loss']
